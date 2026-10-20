@@ -15,7 +15,9 @@ export default function BorderCard({ border, direction, travelType, isPinned, on
 
   return (
     <li
-      className="flex items-stretch gap-3 rounded-card border border-line bg-paper-raised p-4 shadow-card"
+      className={`flex items-stretch gap-3 rounded-card border p-4 shadow-card transition-colors ${
+        isPinned ? 'border-brand/40 bg-brand-light' : 'border-line bg-paper-raised'
+      }`}
       style={{ borderLeft: `4px solid ${meta.dot}` }}
     >
       <div className="min-w-0 flex-1">
