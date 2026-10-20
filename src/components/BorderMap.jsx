@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
-import { getSelectedDelay, displayName, formatMinutes, formatRelativeTime, STATUS_META } from '../utils/delay'
+import { getSelectedDelay, displayName, formatMinutes, formatUpdatedTime, STATUS_META } from '../utils/delay'
 
 const MAP_API_KEY = import.meta.env.VITE_CARTO_API_KEY?.trim()
 const TILE_URL = `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png${MAP_API_KEY ? `?key=${encodeURIComponent(MAP_API_KEY)}` : ''}`
@@ -69,7 +69,7 @@ export default function BorderMap({ borders, direction, travelType, focusId }) {
                       </span>
                     </div>
                     <p className="mt-1 text-xs text-ink-soft">
-                      Updated {formatRelativeTime(delay.updatedAt)}
+                      Updated {formatUpdatedTime(delay.updatedAt)}
                     </p>
                   </div>
                 </Popup>

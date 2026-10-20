@@ -4,7 +4,7 @@ import {
   displayName,
   displaySubtitle,
   formatMinutes,
-  formatRelativeTime,
+  formatUpdatedTime,
   STATUS_META,
 } from '../utils/delay'
 
@@ -42,7 +42,7 @@ export default function BorderCard({ border, direction, travelType, isPinned, on
             </span>
           )}
           <p className="ml-auto text-xs text-ink-soft">
-            Updated {formatRelativeTime(delay.updatedAt)}
+            Updated {formatUpdatedTime(delay.updatedAt)}
           </p>
         </div>
       </div>

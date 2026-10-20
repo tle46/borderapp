@@ -55,6 +55,18 @@ export function formatMinutes(minutes) {
   return `${minutes} min`
 }
 
+export function formatUpdatedTime(isoString) {
+  if (!isoString) return 'N/A'
+  const date = new Date(isoString)
+  if (Number.isNaN(date.getTime())) return 'N/A'
+  const localTime = date.toLocaleTimeString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  })
+  return `${formatRelativeTime(isoString)} (${localTime})`
+}
+
 export function formatRelativeTime(isoString) {
   if (!isoString) return 'N/A'
   const then = new Date(isoString).getTime()
