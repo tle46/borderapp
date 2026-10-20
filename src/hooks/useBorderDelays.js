@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 
-const API_URL = 'http://localhost:8000/borderdelays'
-const POLL_INTERVAL_MS = 60_000
+const API_URL = import.meta.env.VITE_BORDER_DELAYS_API_URL?.trim()
+const configuredPollSeconds = Number(import.meta.env.VITE_POLL_INTERVAL_SECONDS)
+const POLL_INTERVAL_MS = Number.isInteger(configuredPollSeconds) && configuredPollSeconds >= 10 && configuredPollSeconds <= 86400
+  ? configuredPollSeconds * 1000
+  : 60_000
 
 export function useBorderDelays() {
   const [borders, setBorders] = useState([])

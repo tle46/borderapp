@@ -2,6 +2,9 @@ import { useMemo } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
 import { getSelectedDelay, displayName, formatMinutes, formatRelativeTime, STATUS_META } from '../utils/delay'
 
+const MAP_API_KEY = import.meta.env.VITE_CARTO_API_KEY?.trim()
+const TILE_URL = `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png${MAP_API_KEY ? `?key=${encodeURIComponent(MAP_API_KEY)}` : ''}`
+
 const CENTER = [47.5, -96]
 const DEFAULT_ZOOM = 4
 
@@ -32,7 +35,7 @@ export default function BorderMap({ borders, direction, travelType, focusId }) {
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=cb1_3otj_1_4751e0c796597b9eaf028aa0"
+            url={TILE_URL}
             subdomains={['a', 'b', 'c', 'd']}
           />
 

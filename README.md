@@ -7,6 +7,7 @@ crossing: an interactive map up top, and a filterable, pinnable list below.
 
 ```bash
 npm install
+# Copy .env.example to .env and set your local API URL.
 npm run dev
 ```
 
@@ -21,13 +22,14 @@ npm run preview   # serve the production build locally
 
 ## Connecting to the live data feed
 
-The app fetches from:
+Set `VITE_BORDER_DELAYS_API_URL` to the complete API endpoint, including
+`/borderdelays`. For local development, use this in your ignored `.env` file:
 
-```
-http://localhost:8000/borderdelays
+```dotenv
+VITE_BORDER_DELAYS_API_URL=http://localhost:8000/borderdelays
 ```
 
-every 60 seconds, expecting the response shape:
+The app polls every 60 seconds by default, expecting the response shape:
 
 ```json
 {
@@ -59,8 +61,39 @@ wait times. If a connection fails after live data has loaded, the last received
 values remain visible with an outdated-data warning. It retries every 60 seconds
 and returns to Live status when the API responds. No sample dataset is bundled.
 
-To point at a different host or port, edit `API_URL` in
-`src/hooks/useBorderDelays.js`.
+## Deployment configuration
+
+The committed `.env.production` uses `/borderdelays` on the same origin as the
+website. Configure your host to route that path to the backend. If your API runs
+on another domain, set this environment variable in your hosting provider before
+building:
+
+```dotenv
+VITE_BORDER_DELAYS_API_URL=https://your-api.example.com/borderdelays
+```
+
+Use your actual HTTPS backend address. Its CORS configuration must allow your
+frontend origin when using a separate domain. Do not deploy a localhost API URL:
+that points to each visitor's computer.
+
+Set `VITE_POLL_INTERVAL_SECONDS` to adjust the refresh frequency (an integer
+from 10 to 86400 seconds). Missing or invalid values fall back to 60 seconds.
+
+Build command: `npm ci && npm run build`. Publish directory: `dist`.
+Vite embeds these values at build time; rebuild after changing them. Hosting
+build environment variables override the env files. `.env.production` overrides
+the local `.env` API URL during production builds. All `VITE_` variables are public
+in the browser; keep API secrets in the backend.
+
+## Map API key
+
+Set `VITE_CARTO_API_KEY` in your local `.env` and your hosting provider's build
+environment. Request a key at https://www.carto.com/basemaps/apikey/.
+The existing key has been moved out of source into the ignored local `.env`;
+production requires its own configured value. Rebuild after changing the key.
+This browser map key is visible in tile requests even when configured through
+environment variables. Configure restrictions in the CARTO dashboard and keep
+OpenStreetMap/CARTO attribution visible.
 
 ## How wait-time color is decided
 
@@ -88,8 +121,6 @@ src/
     useBorderDelays.js – polling fetch + connection status
   utils/
     delay.js          – status thresholds, field mapping, formatting
-  data/
-    sampleData.json    – offline demo dataset (matches live API shape)
 ```
 
 ## Notes
