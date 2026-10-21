@@ -7,7 +7,7 @@ crossing: an interactive map up top, and a filterable, pinnable list below.
 
 ```bash
 npm install
-# Copy .env.example to .env and set your local API URL.
+# Copy .env.example to .env; start the backend on port 8000.
 npm run dev
 ```
 
@@ -26,7 +26,7 @@ Set `VITE_BORDER_DELAYS_API_URL` to the complete API endpoint, including
 `/borderdelays`. For local development, use this in your ignored `.env` file:
 
 ```dotenv
-VITE_BORDER_DELAYS_API_URL=http://localhost:8000/borderdelays
+VITE_BORDER_DELAYS_API_URL=/api/borderdelays
 ```
 
 The app polls every 60 seconds by default, expecting the response shape:
@@ -63,18 +63,22 @@ and returns to Live status when the API responds. No sample dataset is bundled.
 
 ## Deployment configuration
 
-The committed `.env.production` uses `/borderdelays` on the same origin as the
-website. Configure your host to route that path to the backend. If your API runs
-on another domain, set this environment variable in your hosting provider before
-building:
+Deploy this repository to Cloudflare Pages with:
 
-```dotenv
-VITE_BORDER_DELAYS_API_URL=https://your-api.example.com/borderdelays
-```
+- Root directory: `border-wait-times` if your repository contains both projects; otherwise leave it at the frontend repository root.
+- Build command: `npm ci && npm run build`
+- Build output directory: `dist`
+- Runtime environment variable: `BACKEND_ORIGIN=http://77.112.68.23/border` (backend base URL, including its path prefix, without the endpoint).
+- Set `BACKEND_ORIGIN` for both Production and Preview environments as needed, then redeploy.
+- Keep `VITE_BORDER_DELAYS_API_URL=/api/borderdelays` in the build environment. Remove any earlier direct HTTP API URL override and rebuild. Keep the EC2 backend's `ROOT_PATH=/border` for its Caddy route.
 
-Use your actual HTTPS backend address. Its CORS configuration must allow your
-frontend origin when using a separate domain. Do not deploy a localhost API URL:
-that points to each visitor's computer.
+Use Git integration or Wrangler deployment from the frontend project root so the `functions` directory is deployed alongside `dist`. Uploading only static files through dashboard drag-and-drop does not deploy Pages Functions.
+
+The frontend requests `/api/borderdelays` over HTTPS. The catch-all function in `functions/api/[[path]].js` replaces `/api` with the configured backend path prefix, preserving query strings, methods, bodies, response statuses, and headers. With the EC2 base URL above, `/api/health` forwards to `/border/health` and `/api/borderdelays` forwards to `/border/borderdelays`. A base URL with no prefix remains supported. Same-backend redirects within the prefix are rewritten to Pages `/api` URLs. The server-to-server EC2 connection remains HTTP; the browser connection uses HTTPS.
+
+`public/_routes.json` limits Function execution to API requests; static assets are served directly by Pages. `BACKEND_ORIGIN` is server-side configuration and must not have a `VITE_` prefix. The backend must be reachable by Cloudflare; localhost addresses only work for local development. The proxy does not make the backend private or add authentication. Requests are not cached by this proxy.
+
+For local development and `npm run preview`, Vite proxies `/api` to `http://127.0.0.1:8000`. Override this with `BACKEND_ORIGIN` in your local `.env` if necessary. Update any existing local `VITE_BORDER_DELAYS_API_URL` value to `/api/borderdelays`. Leave backend `ROOT_PATH` unset for direct local backend access; set it to `/api` when checking documentation through the proxy.
 
 Set `VITE_POLL_INTERVAL_SECONDS` to adjust the refresh frequency (an integer
 from 10 to 86400 seconds). Missing or invalid values fall back to 60 seconds.
@@ -130,3 +134,4 @@ src/
   bottom-right corner) to keep the background quiet behind the status dots.
 - Built with React + Vite + Tailwind CSS, `react-leaflet` for the map, and
   `lucide-react` for icons.
+

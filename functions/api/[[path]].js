@@ -1,18 +1,20 @@
 // Pages routes every /api/* request here; BACKEND_ORIGIN is server-side only.
 export async function onRequest({ request, env }) {
   let upstream
+  let backendPrefix
   try {
     upstream = new URL(env.BACKEND_ORIGIN)
-    if (!['http:', 'https:'].includes(upstream.protocol) || upstream.pathname !== '/' || upstream.search || upstream.hash || upstream.username || upstream.password) {
-      throw new Error('Expected an HTTP(S) origin')
+    if (!['http:', 'https:'].includes(upstream.protocol) || upstream.search || upstream.hash || upstream.username || upstream.password) {
+      throw new Error('Expected an HTTP(S) base URL')
     }
+    backendPrefix = upstream.pathname.replace(/\/+$/, '')
   } catch {
-    return Response.json({ detail: 'BACKEND_ORIGIN must be configured as an HTTP(S) origin.' }, { status: 503 })
+    return Response.json({ detail: 'BACKEND_ORIGIN must be configured as an HTTP(S) base URL, optionally including a path prefix.' }, { status: 503 })
   }
 
   const incoming = new URL(request.url)
   // Assign pathname rather than resolving a relative URL so paths cannot change the origin.
-  upstream.pathname = incoming.pathname.replace(/^\/api(?=\/|$)/, '') || '/'
+  upstream.pathname = backendPrefix + (incoming.pathname.replace(/^\/api(?=\/|$)/, '') || '/')
   upstream.search = incoming.search
   const headers = new Headers(request.headers)
   headers.delete('host')
@@ -27,10 +29,10 @@ export async function onRequest({ request, env }) {
     const location = responseHeaders.get('location')
     if (location) {
       const redirect = new URL(location, upstream)
-      if (redirect.origin === upstream.origin) {
+      if (redirect.origin === upstream.origin && (!backendPrefix || redirect.pathname === backendPrefix || redirect.pathname.startsWith(`${backendPrefix}/`))) {
         redirect.protocol = incoming.protocol
         redirect.host = incoming.host
-        if (!/^\/api(?:\/|$)/.test(redirect.pathname)) redirect.pathname = `/api${redirect.pathname}`
+        redirect.pathname = `/api${redirect.pathname.slice(backendPrefix.length) || '/'}`
         responseHeaders.set('location', redirect.toString())
       }
     }
