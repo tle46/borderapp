@@ -46,7 +46,7 @@ export default function BorderMap({ borders, direction, travelType, focusId }) {
               <CircleMarker
                 key={border.border_id}
                 center={[lat, lng]}
-                radius={isFocused ? 10 : 7}
+                radius={isFocused ? 14 : 10}
                 pathOptions={{
                   color: '#FFFFFF',
                   weight: 2,
@@ -105,3 +105,4 @@ function Legend() {
     </div>
   )
 }
+
